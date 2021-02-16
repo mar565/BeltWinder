@@ -60,3 +60,6 @@ Hilfe ist natürlich gern gesehen. Da ich kein Informatiker bin, sondern das gan
 * Nutzung des ESP32 für BLE(RSSI) Entfernungsmessung. Bsp: Handy, Smartwatch, Beacon
 * Da die Gurtwickler günstig verteilt sind: Indoor BLE-Ortung durch Vergleich der einzelnen RSSI Werte. Zumindest Raumgenau...
 
+# Bugs & Bunnys
+* Nach dem Konfigurieren werden die MQTT Topics nicht erstellt. 1-2 reboots beheben das Problem. Kann auch an meinem Mossquitto oder ioBroker liegen
+* Nach der Kalibrierungsfahrt wird das Positionstopic nicht sofort erstellt. Lösung -> Kurz fahren.
