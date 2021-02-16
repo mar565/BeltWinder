@@ -22,12 +22,7 @@ const char wifiInitialApPassword[] = "GW60-ESP";
 #define NUMBER_LEN 32
 
 // -- Konfigurations-Version. Dieser Wert sollte geändert werden, wenn sich etwas an der Konfigurations-Struktur geändert hat.
-#define CONFIG_VERSION "GW_MR_v1"
-
-// -- Status-Indicator Pin.
-//    Erst komplett ein, Während des WLAN-Aufbaus blinkt es schnell,
-//    wenn mit WLAN verbunden, einmal Blinken alle 8 Sekunden.
-//#define STATUS_PIN D7
+#define CONFIG_VERSION "BW_v0.1"
 
 // -- Wenn im Bootvorgang auf LOW, startet das Gerät im AP-Modus mit dem initialen Passwort
 //    z.B. wenn das Passwort vergessen wurde
