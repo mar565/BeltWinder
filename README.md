@@ -21,8 +21,8 @@ Hilfe ist natürlich gern gesehen. Da ich kein Informatiker bin, sondern das gan
     * Kalibrierungsfahrt muss gestartet werden: einmalig notwendig
     * Position Topic wird erstellt und aktiviert
 * Nach reboot:
-    * letzte bekannte Position wird übermittelt. Postion ist unsicher
-    * Falls zuerst ein Prozentwert ungleich 0/100 angefahren werden soll, findet eine Positionierungsfahrt statt [kürzeste Strecke zwischen vermuteter Position und gewünschter Position, mit Halt an einem Anschlag]. Postion ist bis zum nächsten reboot sicher.
+    * letzte bekannte Position wird übermittelt. Postion ist bestätigt
+    * Falls zuerst ein Prozentwert ungleich 0/100 angefahren werden soll, findet eine Positionierungsfahrt statt [kürzeste Strecke zwischen vermuteter Position und gewünschter Position, mit Halt an einem Anschlag]. Postion ist bis zum nächsten reboot bestätigt
 
 **MQTT Anbindung:**
 * /alive: Status des Gerätes durch lastWill. [true/false -read only]
