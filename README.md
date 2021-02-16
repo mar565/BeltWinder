@@ -8,26 +8,27 @@ https://gitlab.com/ManuA/GW60-Superrollo
 Ausgelegt für die Platine von Papa Romeo (https://www.hempel-online.de/umbau-superrollo-gw60-mit-esp8266/articles/umbau-superrollo-gw60-mit-esp8266.html)
 
 
-  Features:
-  -MQTT Anbindung:
-    -/alive: Status des Gerätes durch lastWill. [true/false -read only]
-    -/state: Richtung [Inaktiv/Up/Down -read only ]
-    -/info: wichtige Meldungen werden hier angegeben [read only]
-    -/up: Fahre nach oben [true/false(button)]
+
+    Features:
+    -MQTT Anbindung:
+    - /alive: Status des Gerätes durch lastWill. [true/false -read only]
+    - /state: Richtung [Inaktiv/Up/Down -read only ]
+    - /info: wichtige Meldungen werden hier angegeben [read only]
+    - /up: Fahre nach oben [true/false(button)]
     -/down: Fahre nach unten [true/false(button)]
     -/pause: Pausiere normale Fahrt [true/false(button)]
     -/calibration: Führt eine Kalibrierungsfahrt durch und speichert Wert in EEPROM [true/false(button)]
     -/position: aktuelle/gewünschte Position in %. Aktiv nach Kalibrierung [0-100]
     -/count: letzter bekannter Impulszählerwert. Wird bei Start abgerufen und als Ausgangswert genutzt (EEPROM Schonung)[read only]
 
-  -IotWebserver:
+    IotWebserver:
     -Start, ohne Konfiguration: Baut Access Point [name:"GW-60", pw:"GW-60"] auf. Gerätekonfiguration [192.168.4.1].
     -Start, mit Konfiguration, D0 high, mit Wartezeit: Access Point für konfigurierte Zeit, dann Verbindung zu WLAN.
     -Start, mit Konfiguration, D0 high, Wartezeit=0. Mqtt Verbindung in ~10s
     -Start, mit Konfiguration, D0 low: Acces Point mit Standartpasswort bis Verbindung.
 
 
-  -Verhalten.
+    Verhalten.
     -Nach erstmaliger Gerätekonfiguration und WLAN Verbindung:
       -Minimal notwendige Topics werden erstellt.
       -Kalibrierungsfahrt muss gestartet werden: einmalig notwendig
