@@ -5,7 +5,7 @@ Version: 0.1
 Inspiriert und basierend auf dem Programm von ManuA:
 https://gitlab.com/ManuA/GW60-Superrollo
 
-Ausgelegt für die Platine von Papa Romeo (https://www.hempel-online.de/umbau-superrollo-gw60-mit-esp8266/articles/umbau-superrollo-gw60-mit-esp8266.html)
+Ausgelegt für die Platine von Papa Romeo (https://forum.fhem.de/index.php/topic,60575.msg723047.html#msg723047)
 
 Wann, und ob, ich etwas von der ToDo Liste abarbeite entscheidet Lust und Laune.
 Hilfe ist natürlich gern gesehen. Da ich kein Informatiker bin, sondern das ganze nur als Hobby betreibe, lerne ich auf diese Weise gerne dazu.
