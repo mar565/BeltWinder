@@ -48,7 +48,7 @@ Hilfe ist natürlich gern gesehen. Da ich kein Informatiker bin, sondern das gan
 * MQTT Port im IotWebServer konfigurierbar
 * Code cleanup - Aufteilung in main.cpp, webServer.cpp, mqttStuff.cpp, programMagic.cpp, otherMagic.cpp
 * Code kommentieren
-* Englisch Übersetzung: Kommentare + reedme
+* Englisch Übersetzung: Kommentare + readme
 * Code anpassen für ESP32 (hauptsächlich iotWebServer)
 
 **Ideen nach V1.0:**
