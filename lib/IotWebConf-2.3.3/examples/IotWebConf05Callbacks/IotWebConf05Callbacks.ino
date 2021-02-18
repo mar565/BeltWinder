@@ -1,5 +1,5 @@
 /**
- * IotWebConf02StatusAndReset.ino -- IotWebConf is an ESP8266/ESP32
+ * IotWebConf05Callbacks.ino -- IotWebConf is an ESP8266/ESP32
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
@@ -10,25 +10,17 @@
  */
 
 /**
- * Example: Status and Reset
+ * Example: Callbacks
  * Description:
- *   This example is very similar to the "mininal" example.
- *   But here we provide a status indicator LED, to get feedback
- *   of the thing state.
- *   Further more we set up a push button. If push button is detected
- *   to be pressed at boot time, the thing will use the initial
- *   password for accepting connections in Access Point mode. This
- *   is usefull e.g. when custom password was lost.
+ *   This example shows, what callbacks IotWebConf provides.
  *   (See previous examples for more details!)
  * 
  * Hardware setup for this example:
  *   - An LED is attached to LED_BUILTIN pin with setup On=LOW.
- *     This is hopefully already attached by default.
- *   - A push button is attached to pin D2, the other leg of the
+ *   - [Optional] A push button is attached to pin D2, the other leg of the
  *     button should be attached to GND.
  */
 
-#include <DNSServer.h>
 #include <IotWebConf.h>
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
@@ -36,6 +28,11 @@ const char thingName[] = "testThing";
 
 // -- Initial password to connect to the Thing, when it creates an own Access Point.
 const char wifiInitialApPassword[] = "smrtTHNG8266";
+
+#define STRING_LEN 128
+
+// -- Configuration specific key. The value should be modified if config structure was changed.
+#define CONFIG_VERSION "dem3"
 
 // -- When CONFIG_PIN is pulled to ground on startup, the Thing will use the initial
 //      password to buld an AP. (E.g. in case of lost password)
@@ -46,10 +43,19 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 //      when connected to the Wifi it will turn off (kept HIGH).
 #define STATUS_PIN LED_BUILTIN
 
+// -- Callback method declarations.
+void wifiConnected();
+void configSaved();
+boolean formValidator();
+
 DNSServer dnsServer;
 WebServer server(80);
+HTTPUpdateServer httpUpdater;
 
-IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword);
+char stringParamValue[STRING_LEN];
+
+IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
+IotWebConfParameter stringParam = IotWebConfParameter("String param", "stringParam", stringParamValue, STRING_LEN);
 
 void setup() 
 {
@@ -57,10 +63,19 @@ void setup()
   Serial.println();
   Serial.println("Starting up...");
 
-  // -- Initializing the configuration.
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
-  iotWebConf.init();
+  iotWebConf.addParameter(&stringParam);
+  iotWebConf.setConfigSavedCallback(&configSaved);
+  iotWebConf.setFormValidator(&formValidator);
+  iotWebConf.setWifiConnectionCallback(&wifiConnected);
+
+  // -- Initializing the configuration.
+  boolean validConfig = iotWebConf.init();
+  if (!validConfig)
+  {
+    stringParamValue[0] = '\0';
+  }
 
   // -- Set up required URL handlers on the web server.
   server.on("/", handleRoot);
@@ -88,10 +103,39 @@ void handleRoot()
     return;
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
-  s += "<title>IotWebConf 02 Status and Reset</title></head><body>Hello world!";
-  s += "Go to <a href='config'>configure page</a> to change settings.";
+  s += "<title>IotWebConf 05 Callbacks</title></head><body>Hello world!";
+  s += "<ul>";
+  s += "<li>String param value: ";
+  s += stringParamValue;
+  s += "</ul>";
+  s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";
 
   server.send(200, "text/html", s);
+}
+
+void wifiConnected()
+{
+  Serial.println("WiFi was connected.");
+}
+
+void configSaved()
+{
+  Serial.println("Configuration was updated.");
+}
+
+boolean formValidator()
+{
+  Serial.println("Validating form.");
+  boolean valid = true;
+
+  int l = server.arg(stringParam.getId()).length();
+  if (l < 3)
+  {
+    stringParam.errorMessage = "Please provide at least 3 characters for this test!";
+    valid = false;
+  }
+
+  return valid;
 }
 

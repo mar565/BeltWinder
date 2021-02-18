@@ -5,7 +5,7 @@
 #include <PubSubClient.h> 
 #include "FS.h"
 #include <EEPROM.h>
-#include <x_IotWebConf.h>
+#include <IotWebConf.h>
 //Debug Level definieren
 #define DEBUGLEVEL 0
 #include <DebugUtils.h>
@@ -698,7 +698,13 @@ void setupWebserver(){
   server.on("/config", []{ iotWebConf.handleConfig(); });
   server.onNotFound([](){ iotWebConf.handleNotFound(); });
 
-  WiFi.hostname(iotWebConf.getThingName());
+  //Pure Magic -> someone should look into it
+  #ifdef ESP8266
+    WiFi.hostname(iotWebConf.getThingName());
+  #elif defined(ESP32)
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);  // This is a MUST!
+    WiFi.setHostname(iotWebConf.getThingName());
+  #endif
 }
 /*
 *

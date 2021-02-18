@@ -200,7 +200,7 @@ void loop()
     }
     else
     {
-      iotWebConf.blink(0, 0); // No blink
+      iotWebConf.stopCustomBlink();
     }
     mqttClient.publish(mqttStatusTopic, state == HIGH ? "ON" : "OFF", true, 1);
     mqttClient.publish(mqttActionTopic, state == HIGH ? "ON" : "OFF", true, 1);
@@ -223,7 +223,7 @@ void handleRoot()
     return;
   }
   String s = F("<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>");
-  s += FPSTR(IOTWEBCONF_HTTP_STYLE);
+  s += iotWebConf.getHtmlFormatProvider()->getStyle();
   s += "<title>IotWebConf 07 MQTT Relay</title></head><body>";
   s += iotWebConf.getThingName();
   s += "<div>State: ";

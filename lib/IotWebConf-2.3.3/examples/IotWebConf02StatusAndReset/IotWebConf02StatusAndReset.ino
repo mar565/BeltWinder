@@ -1,5 +1,5 @@
 /**
- * IotWebConf01Minimal.ino -- IotWebConf is an ESP8266/ESP32
+ * IotWebConf02StatusAndReset.ino -- IotWebConf is an ESP8266/ESP32
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
@@ -10,22 +10,24 @@
  */
 
 /**
- * Example: Minimal
+ * Example: Status and Reset
  * Description:
- *   This example will shows the bare minimum required for IotWeConf to start up.
- *   After starting up the thing, please search for WiFi access points e.g. with
- *   your phone. Use password provided in the code!
- *   After connecting to the access point the root page will automatically appears.
- *   We call this "captive portal".
- *   
- *   Please set a new password for the Thing (for the access point) as well as
- *   the SSID and password of your local WiFi. You cannot move on without these steps.
- *   
- *   You have to leave the access point before to let the Thing continue operation
- *   with connecting to configured WiFi.
+ *   This example is very similar to the "minimal" example.
+ *   But here we provide a status indicator LED, to get feedback
+ *   of the thing state.
+ *   Further more we set up a push button. If push button is detected
+ *   to be pressed at boot time, the thing will use the initial
+ *   password for accepting connections in Access Point mode. This
+ *   is usefull e.g. when custom password was lost.
+ *   (See previous examples for more details!)
+ * 
+ * Hardware setup for this example:
+ *   - An LED is attached to LED_BUILTIN pin with setup On=LOW.
+ *     This is hopefully already attached by default.
+ *   - A push button is attached to pin D2, the other leg of the
+ *     button should be attached to GND.
  */
 
-#include <DNSServer.h>
 #include <IotWebConf.h>
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
@@ -33,6 +35,15 @@ const char thingName[] = "testThing";
 
 // -- Initial password to connect to the Thing, when it creates an own Access Point.
 const char wifiInitialApPassword[] = "smrtTHNG8266";
+
+// -- When CONFIG_PIN is pulled to ground on startup, the Thing will use the initial
+//      password to build an AP. (E.g. in case of lost password)
+#define CONFIG_PIN D2
+
+// -- Status indicator pin.
+//      First it will light up (kept LOW), on Wifi connection it will blink,
+//      when connected to the Wifi it will turn off (kept HIGH).
+#define STATUS_PIN LED_BUILTIN
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -46,6 +57,8 @@ void setup()
   Serial.println("Starting up...");
 
   // -- Initializing the configuration.
+  iotWebConf.setStatusPin(STATUS_PIN);
+  iotWebConf.setConfigPin(CONFIG_PIN);
   iotWebConf.init();
 
   // -- Set up required URL handlers on the web server.
@@ -74,7 +87,7 @@ void handleRoot()
     return;
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
-  s += "<title>IotWebConf 01 Minimal</title></head><body>Hello world!";
+  s += "<title>IotWebConf 02 Status and Reset</title></head><body>Hello world!";
   s += "Go to <a href='config'>configure page</a> to change settings.";
   s += "</body></html>\n";
 

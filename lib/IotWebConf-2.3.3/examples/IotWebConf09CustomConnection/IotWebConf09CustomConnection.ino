@@ -1,5 +1,5 @@
 /**
- * IotWebConf03CustomParameters.ino -- IotWebConf is an ESP8266/ESP32
+ * IotWebConf09CustomConnection.ino -- IotWebConf is an ESP8266/ESP32
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
@@ -10,13 +10,13 @@
  */
 
 /**
- * Example: Custom parameters
+ * Example: Custom connection
  * Description:
- *   In this example it is shown how to attach your custom parameters
- *   to the config portal. Your parameters will be maintained by 
- *   IotWebConf. This means, they will be loaded from/saved to EEPROM,
- *   and will appear in the config portal.
- *   Note the configSaved and formValidator callbacks!
+ *   This example is for advanced users only!
+ *   In this example custom connection handler methods are defined
+ *   to override the default connecting behavior.
+ *   Also, three custom parameters are introduced, that are used
+ *   at the connection.
  *   (See previous examples for more details!)
  * 
  * Hardware setup for this example:
@@ -37,11 +37,11 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 #define NUMBER_LEN 32
 
 // -- Configuration specific key. The value should be modified if config structure was changed.
-#define CONFIG_VERSION "dem2"
+#define CONFIG_VERSION "dem9"
 
 // -- When CONFIG_PIN is pulled to ground on startup, the Thing will use the initial
 //      password to buld an AP. (E.g. in case of lost password)
-#define CONFIG_PIN D2
+#define CONFIG_PIN 2
 
 // -- Status indicator pin.
 //      First it will light up (kept LOW), on Wifi connection it will blink,
@@ -51,19 +51,24 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 // -- Callback method declarations.
 void configSaved();
 boolean formValidator();
+boolean connectAp(const char* apName, const char* password);
+void connectWifi(const char* ssid, const char* password);
 
 DNSServer dnsServer;
 WebServer server(80);
 
-char stringParamValue[STRING_LEN];
-char intParamValue[NUMBER_LEN];
-char floatParamValue[NUMBER_LEN];
+char ipAddressValue[STRING_LEN];
+char gatewayValue[STRING_LEN];
+char netmaskValue[STRING_LEN];
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
-IotWebConfParameter stringParam = IotWebConfParameter("String param", "stringParam", stringParamValue, STRING_LEN);
-IotWebConfSeparator separator1 = IotWebConfSeparator();
-IotWebConfParameter intParam = IotWebConfParameter("Int param", "intParam", intParamValue, NUMBER_LEN, "number", "1..100", NULL, "min='1' max='100' step='1'");
-IotWebConfParameter floatParam = IotWebConfParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN, "number", "e.g. 23.4", NULL, "step='0.1'");
+IotWebConfParameter ipAddressParam = IotWebConfParameter("IP address", "ipAddress", ipAddressValue, STRING_LEN, "text", NULL, "192.168.3.222");
+IotWebConfParameter gatewayParam = IotWebConfParameter("Gateway", "gateway", gatewayValue, STRING_LEN, "text", NULL, "192.168.3.0");
+IotWebConfParameter netmaskParam = IotWebConfParameter("Subnet mask", "netmask", netmaskValue, STRING_LEN, "text", NULL, "255.255.255.0");
+
+IPAddress ipAddress;
+IPAddress gateway;
+IPAddress netmask;
 
 void setup() 
 {
@@ -73,16 +78,16 @@ void setup()
 
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
-  iotWebConf.addParameter(&stringParam);
-  iotWebConf.addParameter(&separator1);
-  iotWebConf.addParameter(&intParam);
-  iotWebConf.addParameter(&floatParam);
+  iotWebConf.addParameter(&ipAddressParam);
+  iotWebConf.addParameter(&gatewayParam);
+  iotWebConf.addParameter(&netmaskParam);
   iotWebConf.setConfigSavedCallback(&configSaved);
   iotWebConf.setFormValidator(&formValidator);
-  iotWebConf.getApTimeoutParameter()->visible = true;
+  iotWebConf.setApConnectionHandler(&connectAp);
+  iotWebConf.setWifiConnectionHandler(&connectWifi);
 
   // -- Initializing the configuration.
-  iotWebConf.init();
+  boolean validConfig = iotWebConf.init();
 
   // -- Set up required URL handlers on the web server.
   server.on("/", handleRoot);
@@ -110,14 +115,10 @@ void handleRoot()
     return;
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
-  s += "<title>IotWebConf 03 Custom Parameters</title></head><body>Hello world!";
+  s += "<title>IotWebConf 09 Custom Connection</title></head><body>Hello world!";
   s += "<ul>";
-  s += "<li>String param value: ";
-  s += stringParamValue;
-  s += "<li>Int param value: ";
-  s += atoi(intParamValue);
-  s += "<li>Float param value: ";
-  s += atof(floatParamValue);
+  s += "<li>IP address: ";
+  s += ipAddressValue;
   s += "</ul>";
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";
@@ -135,13 +136,44 @@ boolean formValidator()
   Serial.println("Validating form.");
   boolean valid = true;
 
-  int l = server.arg(stringParam.getId()).length();
-  if (l < 3)
+  if (!ipAddress.fromString(server.arg(ipAddressParam.getId())))
   {
-    stringParam.errorMessage = "Please provide at least 3 characters for this test!";
+    ipAddressParam.errorMessage = "Please provide a valid IP address!";
+    valid = false;
+  }
+  if (!netmask.fromString(server.arg(netmaskParam.getId())))
+  {
+    netmaskParam.errorMessage = "Please provide a valid netmask!";
+    valid = false;
+  }
+  if (!gateway.fromString(server.arg(gatewayParam.getId())))
+  {
+    gatewayParam.errorMessage = "Please provide a valid gateway address!";
     valid = false;
   }
 
   return valid;
 }
 
+boolean connectAp(const char* apName, const char* password)
+{
+  // -- Custom AP settings
+  return WiFi.softAP(apName, password, 4);
+}
+void connectWifi(const char* ssid, const char* password)
+{
+  ipAddress.fromString(String(ipAddressValue));
+  netmask.fromString(String(netmaskValue));
+  gateway.fromString(String(gatewayValue));
+
+  if (!WiFi.config(ipAddress, gateway, netmask)) {
+    Serial.println("STA Failed to configure");
+  }
+  Serial.print("ip: ");
+  Serial.println(ipAddress);
+  Serial.print("gw: ");
+  Serial.println(gateway);
+  Serial.print("net: ");
+  Serial.println(netmask);
+  WiFi.begin(ssid, password);
+}

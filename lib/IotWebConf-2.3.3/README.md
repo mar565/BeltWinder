@@ -1,12 +1,21 @@
+# IotWebConf [![Build Status](https://travis-ci.org/prampec/IotWebConf.svg?branch=master)](https://travis-ci.org/prampec/IotWebConf)
+
 ## Summary
 IotWebConf is an Arduino library for ESP8266/ESP32 to provide a non-blocking standalone WiFi/AP web configuration portal.
 **For ESP8266, IotWebConf requires the esp8266 board package version 2.4.2 or later!**
+
+Please subscribe to the [discussion forum](https://groups.google.com/forum/#!forum/iotwebconf), if you want to be informed on the latest news.
+
+Also visit experimental [Discord server](https://discord.gg/GR3uQeD).
+
+**HELP WANTED!** If you are testing any GIT branches, please give me feedback to provide stable releases for the public.
 
 ## Highlights
 
   - Manages WiFi connection settings,
   - Provides a config portal user interface,
   - You can extend the configuration with your own property items, that are stored automatically,
+  - HTML customization,
   - Validation support for the configuration property items,
   - User code will be notified of status changes with callback methods,
   - Configuration (including your custom items) stored in the EEPROM,
@@ -17,6 +26,7 @@ IotWebConf is an Arduino library for ESP8266/ESP32 to provide a non-blocking sta
   - Well documented header file, and examples from simple to complex levels.
 
 ![Screenshot](https://sharedinventions.com/wp-content/uploads/2018/11/Screenshot_20181105-191748a.png)
+![Screenshot](https://sharedinventions.com/wp-content/uploads/2019/02/Screenshot-from-2019-02-03-22-16-51b.png)
   
 ## How it works
 The idea is that the Thing will provide a web interface to allow modifying its configuration. E.g. for connecting to a local WiFi network, it needs the SSID and the password.
@@ -26,7 +36,7 @@ When no WiFi is configured, or the configured network is unavailable it creates 
 Furthermore there is a button (or let's say a Pin), that when pressed on startup will cause a default password to be used instead of the configured (forgotten) one.
 You can find the default password in the sources. :)
 
-IotWebConf saves configuration in the EEPROM. You can extend the config portal with your custom configuration items. Those items will be also maintained by IotWebConf.
+IotWebConf saves configuration in the "EEPROM". You can extend the config portal with your custom configuration items. Those items will be also maintained by IotWebConf.
 
 ## Use cases
   1. **You turn on your IoT the first time** - It turns into AP (access point) mode, and waits for you on the 192.168.4.1 address with a web interface to set up your local network (and other configurations). For the first time a default password is used when you connect to the AP. When you connect to the AP, your device will likely automatically pop up the portal page. (We call this a Captive Portal.) When configuration is done, you must leave the AP. The device detects that no one is connected, and continues with normal operation.
@@ -37,17 +47,20 @@ IotWebConf saves configuration in the EEPROM. You can extend the config portal w
 
 ## IotWebConf vs. WiFiManager
 tzapu's WiFiManager is a great library. The features of IotWebConf may appear very similar to WiFiManager. However, IotWebConf tries to be different.
-  - WiFiManager does not manages your custom properties. IotWebConf stores your configuration in EEPROM.
+  - WiFiManager does not manages your custom properties. IotWebConf stores your configuration in "EEPROM".
   - WiFiManager does not do validation. IotWebConf allow you to validate your property changes made in the config portal.
   - With WiFiManager you cannot use both startup and on-demand configuration. With IotWebConf the config portal remains available via the connected local WiFi.
   - WiFiManager provides list of available networks and also an information page, while these features are cool, IotWebConf tries to keep the code simple. So these features are not (yet) provided by IotWebConf.
   - IotWebConf is fitted for more advanced users. You can keep control of the web server setup, configuration item input field behavior, and validation.
 
 ## Security aspects
-  - The inital system password must be modified by the user, so there is no build-in password.
+  - The initial system password must be modified by the user, so there is no build-in password.
   - When connecting in AP mode, the WiFi provides an encryption layer, so all you communication here is known to be safe.
   - When connecting through a WiFi router (WiFi mode), the Thing will ask for authentication when someone requests the config portal. This is required as the Thing will be visible for all devices sharing the same network. But be warned by the following note...
   - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network.** So either: Do not allow ambiguous devices connecting to your WiFi router, or configure your Thing only in AP mode!
+  - However IotWebConf has a detailed debug output, passwords are not shown in this log by default. You have
+  to enable password visibility manually in the IotWebConf.h with the IOTWEBCONF_DEBUG_PWD_TO_SERIAL
+  if it is needed.
 
 ## Compatibility
 IotWebConf is primary built for ESP8266. But meanwhile it was discovered, that the code can be adopted
@@ -57,11 +70,14 @@ to ESP32. There are two major problems.
   
 ## TODO / Feature requests
   - We might want to add a "verify password" field.
+  - Possibility to organize blocks of config items to lists. (E.g. provide more SSIDs with passwords as a connection option.)
+  - Option the configure multiply WiFi connections. Try next when the last used one is just not available.
 
 ## Known issues
-  - It is reported, that there might be unstable working with different lwIP variants. If you experiment serious problems, try to select another lwIP varian for your board in the Tools menu! (Tested with "v2 Lower Memory" version.)
+  - It is reported, that there might be unstable working with different lwIP variants. If you experiment serious problems, try to select another lwIP variant for your board in the Tools menu! (Tested with "v2 Lower Memory" version.)
   
 ## Credits
 Although IotWebConf started without being influenced by any other solutions, in the final code you can find some segments borrowed from the WiFiManager library.
   - https://github.com/tzapu/WiFiManager
 
+Thanks to [all contributors](/prampec/IotWebConf/graphs/contributors) providing patches for the library!
