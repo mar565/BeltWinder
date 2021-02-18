@@ -36,7 +36,7 @@ Hilfe ist natürlich gern gesehen. Da ich kein Informatiker bin, sondern das gan
 * /count: letzter bekannter Impulszählerwert. Wird beim Start abgerufen und als Ausgangswert genutzt (EEPROM Schonung)[read only]
 
 **IotWebserver:**
-* Start, ohne Konfiguration: Baut Access Point [name:"GW60-ESP", pw:"GW60-ESP"] auf. Gerätekonfiguration [192.168.4.1].
+* Start, ohne Konfiguration: Öffnet Access Point [name:"GW60-ESP", pw:"GW60-ESP"]. Gerätekonfiguration [192.168.4.1].
 * Start, mit Konfiguration, D0 high, mit Wartezeit: Access Point für konfigurierte Zeit, dann Verbindung zu WLAN.
 * Start, mit Konfiguration, D0 high, Wartezeit=0. Mqtt Verbindung in ~10s. Gerätekonfiguration [ip:admin:gesetztesPW]
 * Start, mit Konfiguration, D0 low: Acces Point mit Standartpasswort bis Verbindung.
