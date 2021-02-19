@@ -7,7 +7,7 @@
 #include <EEPROM.h>
 #include <IotWebConf.h>
 //Debug Level definieren
-#define DEBUGLEVEL 0
+#define DEBUGLEVEL 3
 #include <DebugUtils.h>
 
 
@@ -22,7 +22,7 @@ const char wifiInitialApPassword[] = "GW60-ESP";
 #define NUMBER_LEN 32
 
 // -- Konfigurations-Version. Dieser Wert sollte geändert werden, wenn sich etwas an der Konfigurations-Struktur geändert hat.
-#define CONFIG_VERSION "BW_v0.1"
+#define CONFIG_VERSION "BW_v0.2"
 
 // -- Wenn im Bootvorgang auf LOW, startet das Gerät im AP-Modus mit dem initialen Passwort
 //    z.B. wenn das Passwort vergessen wurde
@@ -52,7 +52,7 @@ WiFiClient wifiClient;
 
 
 char mqttServerValue[STRING_LEN];
-char mqttPortValue[STRING_LEN];
+char mqttPortValue[NUMBER_LEN];
 char mqttUserValue[STRING_LEN];
 char mqttPasswordValue[STRING_LEN];
 char mqttTopicValue[STRING_LEN];
@@ -69,7 +69,7 @@ char mqttOnlineStatusTopic[STRING_LEN];
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 IotWebConfSeparator separator2 = IotWebConfSeparator();
 IotWebConfParameter mqttServer = IotWebConfParameter("MQTT Server", "mqttServer", mqttServerValue, STRING_LEN);
-IotWebConfParameter mqttPort = IotWebConfParameter("MQTT Port", "mqttPort", mqttPortValue, STRING_LEN);
+IotWebConfParameter mqttPort = IotWebConfParameter("MQTT Port", "mqttPort", mqttPortValue, NUMBER_LEN,"1883");
 IotWebConfParameter mqttUser = IotWebConfParameter("MQTT User", "mqttUser", mqttUserValue, STRING_LEN);
 IotWebConfParameter mqttPassword = IotWebConfParameter("MQTT Passwort", "mqttPassword", mqttPasswordValue, STRING_LEN, "password");
 IotWebConfParameter mqttTopic = IotWebConfParameter("MQTT Topic-Prefix", "mqttTopic", mqttTopicValue, STRING_LEN, "text", "z.B. GW60/Testraum");
@@ -77,13 +77,15 @@ IotWebConfParameter mqttTopic = IotWebConfParameter("MQTT Topic-Prefix", "mqttTo
 
 // -- MQTT
 char const* mqtt_server = mqttServerValue;
+int mqtt_port;
 char const* mqtt_username = mqttUserValue;
 char const* mqtt_password = mqttPasswordValue;
 char const* mqtt_clientID = iotWebConf.getThingName();
 char message_buff[100];
 bool mqttRetain = false;
 int mqttQoS = 0;
-int mqtt_port = 1883;
+
+//int rssi = WiFi.RSSI(); // eg. -63
 
 // -- Variablen
 int dir = 0, count = 0, maxCount, newCount = 0, lastSendPercentage = 0;
@@ -96,10 +98,11 @@ byte value;
 *Mqtt Funktionen
 *
 */
-PubSubClient client(mqtt_server, mqtt_port, callback, wifiClient); // -- MQTT initialisieren
+PubSubClient client(wifiClient); // -- MQTT initialisieren
 
 boolean reconnect() {  // -- MQTT Reconnect
   boolean connected = false;
+
   // -- 3 Verbindungsversuche, dann Neustart
   for(int i = 0; i<2;i++){ 
     if(client.connected()) {
@@ -270,6 +273,8 @@ boolean isNumeric(String str) {
 
 
 void setupMqtt(){
+
+  client.setServer(mqtt_server, mqtt_port);
   // -- Setze MQTT Callback-Funktion
   client.setCallback(callback);
   
@@ -692,19 +697,23 @@ void setupWebserver(){
 
   // -- IotWebConf-Konfiguration initialisieren.
   iotWebConf.init();
+  mqtt_port = atoi(mqttPortValue);
 
   // -- URL-Handler auf dem Webserver aktivieren
   server.on("/", handleRoot);
   server.on("/config", []{ iotWebConf.handleConfig(); });
   server.onNotFound([](){ iotWebConf.handleNotFound(); });
 
-  //Pure Magic -> someone should look into it
+  //((Pure Magic -> someone should look into it)
+  //Probably not necesary, since already handled by iotWebConf
+  /*
   #ifdef ESP8266
     WiFi.hostname(iotWebConf.getThingName());
   #elif defined(ESP32)
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);  // This is a MUST!
     WiFi.setHostname(iotWebConf.getThingName());
   #endif
+  */
 }
 /*
 *
@@ -783,6 +792,7 @@ void loop() {
   if (WiFi.status() == WL_CONNECTED && !client.connected()) {
     if(reconnect()){
       //Set online satus
+      Serial.println(mqtt_port);
       mqttSend(mqttOnlineStatusTopic, "true", mqttRetain);
     }
     else{
